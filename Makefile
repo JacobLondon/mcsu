@@ -1,7 +1,5 @@
 CC=tcc
-TARGET=out
 CFLAGS=\
-	-ggdb \
 	-pipe \
 	-Wall \
 	-Wextra
@@ -11,6 +9,14 @@ FILES=\
 	input.c \
 	player.c \
 	util.c
+
+ifeq ($(OS),Windows_NT)
+	RM = del /f
+	TARGET=out.exe
+else
+	RM = rm -rf
+	TARGET=out
+endif
 
 .PHONY: clean
 
@@ -23,4 +29,4 @@ run: $(TARGET)
 	./$(TARGET)
 
 clean:
-	rm -rf $(TARGET)
+	$(RM) $(TARGET)
