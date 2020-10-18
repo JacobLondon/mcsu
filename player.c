@@ -19,8 +19,8 @@ struct Archetype {
  * Static Function Prototypes
  */
 
-static int infantry_get_attack(struct Player *self);
-static int infantry_get_defense(struct Player *self);
+static int infantry_get_attack(struct Player *self, struct Player *other);
+static int infantry_get_defense(struct Player *self, struct Player *other);
 static void infantry_move(struct Player *self, struct Player list[], int len);
 static void infantry_take_damage(struct Player *self, int damage);
 static struct Player *infantry_select_opponent(struct Player *self, struct Player list[], int len);
@@ -39,38 +39,70 @@ static struct PlayerVTable infantry_vtable = (struct PlayerVTable){
 
 static struct Archetype arch_list[] = {
     {
-        .archetype = "Infantryman",
+        .archetype = "Infantry",
         .definition = (struct Player){
             .hp = 10,
             .ac = 20,
             .damage = 10,
             .range = 5, // feet
+            .speed = 60,
+            .training = 5,
             .vtable = &infantry_vtable,
         },
     }
 };
 
+
+void player_choose_formation(struct Player *self)
+{
+    assert(self);
+    input_table.choose_formation(self);
+}
+
+
 /**
  * Static Function Definitions
  */
 
-static int infantry_get_attack(struct Player *self)
+static int infantry_get_attack(struct Player *self, struct Player *other)
 {
     assert(self);
-    return RAND_RANGE(1, 20) + self->damage;
+    assert(other);
+    assert(self->formation.attack_bonus);
+    return RAND_RANGE(1, 20)
+        + self->damage
+        + self->training
+        + self->formation.attack_bonus(self, other);
 }
 
-static int infantry_get_defense(struct Player *self)
+static int infantry_get_defense(struct Player *self, struct Player *other)
 {
+    int i;
+    int ac;
+
     assert(self);
-    return self->ac;
+    assert(other);
+    assert(self->formation.defend_bonus);
+
+    ac = self->ac;
+
+    for (i = 0; i < ARRAY_SIZE(self->armor); i++) {
+        if (self->armor[i].name != NULL) {
+            ac += self->armor[i].ac;
+        }
+    }
+    ac += self->formation.defend_bonus(self, other);
+
+    return ac;
 }
 
 static void infantry_move(struct Player *self, struct Player list[], int len)
 {
     assert(self);
+    assert(list);
+    assert(len > 0);
 
-    input_table.choose_move_pos(&self->x, &self->y, list, len);
+    input_table.choose_move_pos(self, list, len);
 }
 
 static void infantry_take_damage(struct Player *self, int damage)
@@ -114,6 +146,8 @@ int player_make_archetype(const char *archetype, const char *name, struct Player
             (void)memcpy(out, &arch_list[i].definition, sizeof(struct Player));
             out->archetype = archetype;
             out->name = name;
+            // default formation
+            formation_get("Line", &out->formation);
             rv = 1;
             break;
         }
@@ -150,4 +184,21 @@ again:
 
     // no identical positions created, done
     return;
+}
+
+void player_add_armor(struct Player *self, const char *armor_name)
+{
+    int i;
+
+    assert(self);
+    assert(armor_name);
+
+    for (i = 0; i < ARRAY_SIZE(self->armor); i++) {
+        // we found the open armor slot
+        if (self->armor[i].name == NULL) {
+            armor_get(armor_name, &self->armor[i]);
+            return;
+        }
+    }
+    assert(0);
 }

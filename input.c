@@ -2,15 +2,18 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "formation.h"
 #include "input.h"
+#include "util.h"
 
 
 /**
  * Static Function Prototypes
  */
 
-static void cli_choose_move_pos(int *x_out, int *y_out, struct Player list[], int len);
+static void cli_choose_move_pos(struct Player *player, struct Player list[], int len);
 static struct Player *cli_choose_opponent(struct Player *player, struct Player list[], int len);
+static void cli_choose_formation(struct Player *player);
 static void cli_display_players(struct Player list[], int len);
 
 /**
@@ -20,6 +23,7 @@ static void cli_display_players(struct Player list[], int len);
 struct InputVTable input_table = (struct InputVTable){
     .choose_move_pos = cli_choose_move_pos,
     .choose_opponent = cli_choose_opponent,
+    .choose_formation = cli_choose_formation,
     .display_players = cli_display_players,
 };
 
@@ -27,14 +31,17 @@ struct InputVTable input_table = (struct InputVTable){
  * Static Function Definitions
  */
 
-static void cli_choose_move_pos(int *x_out, int *y_out, struct Player list[], int len)
+/**
+ * Pass x/y_out as the current value that the player is at
+ */
+static void cli_choose_move_pos(struct Player *player, struct Player list[], int len)
 {
     int i;
     int x, y;
     char buf[64];
+    float dist;
 
-    assert(x_out);
-    assert(y_out);
+    assert(player);
     assert(list);
     assert(len > 0);
 
@@ -53,6 +60,12 @@ static void cli_choose_move_pos(int *x_out, int *y_out, struct Player list[], in
             continue;
         }
 
+        dist = distance(x, y, player->x, player->y);
+        if (dist > player->speed) {
+            (void)printf("Too far to move: %.1f / %d ft\n", dist, player->speed);
+            continue;
+        }
+
         // now make sure the spot is available
         for (i = 0; i < len; i++) {
             // need to try again
@@ -63,8 +76,8 @@ static void cli_choose_move_pos(int *x_out, int *y_out, struct Player list[], in
         }
 
         // the space is available
-        *x_out = x;
-        *y_out = y;
+        player->x = x;
+        player->y = y;
         break;
     }
 }
@@ -107,6 +120,34 @@ static struct Player *cli_choose_opponent(struct Player *player, struct Player l
     }
 out:
     return opponent;
+}
+
+/**
+ * Allow the player to change formation
+ */
+void cli_choose_formation(struct Player *player)
+{
+    char buf[64];
+
+    assert(player);
+
+    for (;;) {
+        (void)printf("Set Formation: ");
+        (void)fgets(buf, sizeof(buf), stdin);
+
+        // don't change formation
+        if (strlen(buf) <= 1) {
+            break;
+        }
+
+        if (!formation_is_available(buf)) {
+            (void)printf("Formation '%s' is not a formation\n", buf);
+            continue;
+        }
+
+        formation_get(buf, &player->formation);
+        break;
+    }
 }
 
 static void cli_display_players(struct Player list[], int len)

@@ -33,7 +33,6 @@ void announce(const char *format, ...);
 
 
 int turn_attack(struct Player *attacker, struct Player *defender);
-void turn_move(struct Player *self);
 void turn_play_one(void);
 int turn_game_is_over(void);
 void turn_play_game(void);
@@ -69,7 +68,7 @@ int turn_attack(struct Player *attacker, struct Player *defender)
     assert(defender->vtable->get_defense);
     assert(defender->vtable->take_damage);
 
-    damage = attacker->vtable->get_attack(attacker);
+    damage = attacker->vtable->get_attack(attacker, defender);
 
     if (distance(attacker->x, attacker->y, defender->x, defender->y) > attacker->range) {
         announce("%s %s attacked but was too far away to hit %s %s!\n",
@@ -80,21 +79,14 @@ int turn_attack(struct Player *attacker, struct Player *defender)
 
     announce("%s %s rolled %d against %s %s's %d AC!\n",
         attacker->archetype, attacker->name, damage,
-        defender->archetype, defender->name, defender->ac);
+        defender->archetype, defender->name,
+        defender->vtable->get_defense(defender, attacker));
 
-    damage -= defender->vtable->get_defense(defender);
+    damage -= defender->vtable->get_defense(defender, attacker);
     defender->vtable->take_damage(defender, damage);
 
 skip:
     return (defender->hp <= 0);
-}
-
-void turn_move(struct Player *self)
-{
-    assert(self);
-    assert(self->vtable);
-    assert(self->vtable->move);
-    self->vtable->move(self, player_list, ARRAY_SIZE(player_list));
 }
 
 void turn_play_one(void)
@@ -103,11 +95,14 @@ void turn_play_one(void)
     struct Player *current;
     struct Player *opponent;
 
-    for (i = 0; i < ARRAY_SIZE(player_list); i++) {
-        announce("========================================\n");
-        input_table.display_players(player_list, ARRAY_SIZE(player_list));
-        announce(" === %s's Turn ===\n", player_list[i].name);
+    /**
+     * Order:
+     * 1. Change Formation?
+     * 2. Move?
+     * 3. Attack?
+     */
 
+    for (i = 0; i < ARRAY_SIZE(player_list); i++) {
         current = &player_list[i];
 
         // you don't get a turn if you're dead
@@ -115,15 +110,23 @@ void turn_play_one(void)
             continue;
         }
 
-        turn_move(current);
+        announce("========================================\n");
+        input_table.display_players(player_list, ARRAY_SIZE(player_list));
+        announce(" === %s's Turn ===\n", player_list[i].name);
 
-        // see if attack will be made
+        // 1. Change Formation
+        player_choose_formation(current);
+
+        // 2. Move
+        current->vtable->move(current, player_list, ARRAY_SIZE(player_list));
+
+        // 3. Attack
         opponent = current->vtable->select_opponent(current, player_list, ARRAY_SIZE(player_list));
         if (opponent == NULL) {
             continue;
         }
-        
-        // do attack
+
+        // perform attack
         if (turn_attack(current, opponent)) {
             announce("%s defeated %s!\n", current->name, opponent->name);
         }
@@ -165,8 +168,12 @@ int main(void)
 
     srand(time(NULL));
 
-    player_make_archetype("Infantryman", "Bob", bob);
-    player_make_archetype("Infantryman", "Alice", alice);
+    player_make_archetype("Infantry", "Bob", bob);
+    player_make_archetype("Infantry", "Alice", alice);
+
+    player_add_armor(bob, "Shield");
+    player_add_armor(bob, "Chain Mail");
+
     player_position_rand(bob, player_list, ARRAY_SIZE(player_list), 10);
     player_position_rand(alice, player_list, ARRAY_SIZE(player_list), 10);
 

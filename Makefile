@@ -5,6 +5,8 @@ CFLAGS=\
 	-Wextra
 
 FILES=\
+	armor.c \
+	formation.c \
 	game.c \
 	input.c \
 	player.c \
