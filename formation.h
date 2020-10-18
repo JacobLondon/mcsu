@@ -1,7 +1,6 @@
 #ifndef MCSU_FORMATION_H
 #define MCSU_FORMATION_H
 
-
 struct Player;
 
 struct Formation {

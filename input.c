@@ -127,6 +127,7 @@ out:
  */
 void cli_choose_formation(struct Player *player)
 {
+    char *p;
     char buf[64];
 
     assert(player);
@@ -134,6 +135,11 @@ void cli_choose_formation(struct Player *player)
     for (;;) {
         (void)printf("Set Formation: ");
         (void)fgets(buf, sizeof(buf), stdin);
+
+        p = strstr(buf, "\n");
+        if (p != NULL) {
+            *p = '\0';
+        }
 
         // don't change formation
         if (strlen(buf) <= 1) {
@@ -157,6 +163,7 @@ static void cli_display_players(struct Player list[], int len)
     assert(list);
     assert(len > 0);
 
+    (void)printf("\n");
     for (i = 0; i < len; i++) {
         (void)printf("%s %s (%d) is at (%d, %d)\n",
             list[i].archetype, list[i].name, list[i].hp,

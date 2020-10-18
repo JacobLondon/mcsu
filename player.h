@@ -3,6 +3,7 @@
 
 #include "armor.h"
 #include "formation.h"
+#include "weapon.h"
 
 #define ARMOR_EQUIPS_MAX 4
 
@@ -18,9 +19,9 @@ struct Player {
     int hp;
     int ac;
     int damage;
-    int range;
     int speed;
     int is_charging;
+    int is_mounted;
     int training;
     int x;
     int y;
@@ -29,6 +30,7 @@ struct Player {
     const char *archetype;
     struct Armor armor[ARMOR_EQUIPS_MAX];
     struct Formation formation;
+    struct Weapon weapon;
 };
 
 /**
@@ -39,6 +41,10 @@ int player_make_archetype(const char *archetype, const char *name, struct Player
 void player_position_rand(struct Player *self, struct Player list[], int len, int boardsize);
 
 void player_add_armor(struct Player *self, const char *armor_name);
+
+int player_has_armor(struct Player *self, const char *armor_name);
+
+int player_has_armor_of_type(struct Player *self, enum ArmorType type);
 
 void player_choose_formation(struct Player *self);
 

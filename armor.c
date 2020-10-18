@@ -8,26 +8,32 @@ static struct Armor armor_list[] = {
     {
         .name = "Shield",
         .ac = 5,
+        .type = ARMOR_TYPE_OTHER,
     },
     {
         .name = "Gambason",
         .ac = 2,
+        .type = ARMOR_TYPE_LIGHT,
     },
     {
         .name = "Chain Mail",
         .ac = 5,
+        .type = ARMOR_TYPE_HEAVY,
     },
     {
         .name = "Full Helmet",
         .ac = 3,
+        .type = ARMOR_TYPE_OTHER,
     },
     {
         .name = "Kettle Helm",
         .ac = 2,
+        .type = ARMOR_TYPE_OTHER,
     },
     {
         .name = "Mail Coif",
         .ac = 1,
+        .type = ARMOR_TYPE_OTHER,
     },
 };
 

@@ -10,7 +10,8 @@ FILES=\
 	game.c \
 	input.c \
 	player.c \
-	util.c
+	util.c \
+	weapon.c
 
 ifeq ($(OS),Windows_NT)
 	RM = del /f

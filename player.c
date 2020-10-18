@@ -44,14 +44,57 @@ static struct Archetype arch_list[] = {
             .hp = 10,
             .ac = 20,
             .damage = 10,
-            .range = 5, // feet
             .speed = 60,
             .training = 5,
             .vtable = &infantry_vtable,
         },
-    }
+    },
+    // TODO
+    /*{
+        .archetype = "Cavalry",
+        .definition = (struct Player){
+            .hp = 10,
+            .ac = 20,
+            .damage = 10,
+            .speed = 120,
+            .training = 5,
+            .vtable = &cavalry_table,
+        },
+    },*/
 };
 
+int player_has_armor(struct Player *self, const char *armor_name)
+{
+    int rv = 0;
+    int i;
+
+    assert(self);
+    assert(armor_name);
+
+    for (i = 0; i < ARRAY_SIZE(self->armor); i++) {
+        if ((self->armor[i].name != NULL) && (strcmp(self->armor[i].name, armor_name) == 0)) {
+            rv = 1;
+        }
+    }
+
+    return rv;
+}
+
+int player_has_armor_of_type(struct Player *self, enum ArmorType type)
+{
+    int rv = 0;
+    int i;
+
+    assert(self);
+
+    for (i = 0; i < ARRAY_SIZE(self->armor); i++) {
+        if ((self->armor[i].name != NULL) && (self->armor[i].type == type)) {
+            rv = 1;
+        }
+    }
+
+    return rv;
+}
 
 void player_choose_formation(struct Player *self)
 {
@@ -69,10 +112,13 @@ static int infantry_get_attack(struct Player *self, struct Player *other)
     assert(self);
     assert(other);
     assert(self->formation.attack_bonus);
+    assert(self->weapon.attack_bonus);
+
     return RAND_RANGE(1, 20)
         + self->damage
         + self->training
-        + self->formation.attack_bonus(self, other);
+        + self->formation.attack_bonus(self, other)
+        + self->weapon.attack_bonus(self, other);
 }
 
 static int infantry_get_defense(struct Player *self, struct Player *other)
@@ -148,6 +194,7 @@ int player_make_archetype(const char *archetype, const char *name, struct Player
             out->name = name;
             // default formation
             formation_get("Line", &out->formation);
+            weapon_get("Sword", &out->weapon);
             rv = 1;
             break;
         }

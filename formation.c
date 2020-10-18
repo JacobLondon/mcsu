@@ -4,6 +4,7 @@
 #include "util.h"
 #include "formation.h"
 #include "player.h"
+#include "weapon.h"
 
 static int skine_attack_bonus(struct Player *attacker, struct Player *defender);
 static int skine_defend_bonus(struct Player *defender, struct Player *attacker);
@@ -183,10 +184,10 @@ static int scatter_defend_bonus(struct Player *defender, struct Player *attacker
     assert(attacker);
     assert(defender);
 
-    if (strcmp(attacker->archetype, "Ranged") == 0) {
+    if (attacker->weapon.type == WEAPON_TYPE_RANGED) {
         rv = 2;
     }
-    else if (strcmp(attacker->archetype, "Infantry") == 0) {
+    else if (attacker->weapon.type == WEAPON_TYPE_MELEE) {
         rv = -2;
     }
 

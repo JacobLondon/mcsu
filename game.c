@@ -70,15 +70,15 @@ int turn_attack(struct Player *attacker, struct Player *defender)
 
     damage = attacker->vtable->get_attack(attacker, defender);
 
-    if (distance(attacker->x, attacker->y, defender->x, defender->y) > attacker->range) {
+    if (!weapon_in_range(attacker, defender)) {
         announce("%s %s attacked but was too far away to hit %s %s!\n",
             attacker->archetype, attacker->name,
             defender->archetype, defender->name);
             goto skip;
     }
 
-    announce("%s %s rolled %d against %s %s's %d AC!\n",
-        attacker->archetype, attacker->name, damage,
+    announce("%s %s's %s rolled %d against %s %s's %d AC!\n",
+        attacker->archetype, attacker->name, attacker->weapon.name, damage,
         defender->archetype, defender->name,
         defender->vtable->get_defense(defender, attacker));
 
@@ -110,7 +110,6 @@ void turn_play_one(void)
             continue;
         }
 
-        announce("========================================\n");
         input_table.display_players(player_list, ARRAY_SIZE(player_list));
         announce(" === %s's Turn ===\n", player_list[i].name);
 
@@ -173,6 +172,8 @@ int main(void)
 
     player_add_armor(bob, "Shield");
     player_add_armor(bob, "Chain Mail");
+
+    player_add_armor(alice, "Chain Mail");
 
     player_position_rand(bob, player_list, ARRAY_SIZE(player_list), 10);
     player_position_rand(alice, player_list, ARRAY_SIZE(player_list), 10);
