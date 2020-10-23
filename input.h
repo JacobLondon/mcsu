@@ -12,6 +12,8 @@ struct InputVTable {
     void (* choose_formation)(struct Player *player);
 
     void (* display_players)(struct Player list[], int len);
+
+    void (* do_charge)(struct Player *player);
 };
 
 extern struct InputVTable input_table;

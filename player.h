@@ -13,6 +13,7 @@ struct PlayerVTable {
     void (* move)(struct Player *self, struct Player list[], int len);
     void (* take_damage)(struct Player *self, int damage);
     struct Player *(* select_opponent)(struct Player *self, struct Player list[], int len);
+    void (* do_charge)(struct Player *self);
 };
 
 struct Player {
@@ -21,7 +22,6 @@ struct Player {
     int damage;
     int speed;
     int is_charging;
-    int is_mounted;
     int training;
     int x;
     int y;
@@ -47,5 +47,9 @@ int player_has_armor(struct Player *self, const char *armor_name);
 int player_has_armor_of_type(struct Player *self, enum ArmorType type);
 
 void player_choose_formation(struct Player *self);
+
+int player_gets_ao(struct Player *self, struct Player *other);
+
+int player_get_speed(struct Player *self);
 
 #endif // MCSU_PLAYER_H
