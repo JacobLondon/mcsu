@@ -15,6 +15,7 @@ static void cli_choose_move_pos(struct Player *player, struct Player list[], int
 static struct Player *cli_choose_opponent(struct Player *player, struct Player list[], int len);
 static void cli_choose_formation(struct Player *player);
 static void cli_display_players(struct Player list[], int len);
+static void cli_do_charge(struct Player *player);
 
 /**
  * Variables
@@ -25,6 +26,7 @@ struct InputVTable input_table = (struct InputVTable){
     .choose_opponent = cli_choose_opponent,
     .choose_formation = cli_choose_formation,
     .display_players = cli_display_players,
+    .do_charge = cli_do_charge,
 };
 
 /**
@@ -60,8 +62,9 @@ static void cli_choose_move_pos(struct Player *player, struct Player list[], int
             continue;
         }
 
+        // TODO: Can add player charge movement bonuses by class
         dist = distance(x, y, player->x, player->y);
-        if (dist > player->speed) {
+        if (dist > player_get_speed(player)) {
             (void)printf("Too far to move: %.1f / %d ft\n", dist, player->speed);
             continue;
         }
@@ -165,8 +168,44 @@ static void cli_display_players(struct Player list[], int len)
 
     (void)printf("\n");
     for (i = 0; i < len; i++) {
-        (void)printf("%s %s (%d) is at (%d, %d)\n",
-            list[i].archetype, list[i].name, list[i].hp,
-            list[i].x, list[i].y);
+        if (list[i].name != NULL) {
+            (void)printf("%s %s (%d) is at (%d, %d)\n",
+                list[i].archetype, list[i].name, list[i].hp,
+                list[i].x, list[i].y);
+        }
+    }
+}
+
+static void cli_do_charge(struct Player *player)
+{
+    char *p;
+    char buf[64];
+
+    assert(player);
+
+    for (;;) {
+        (void)printf("Charge (Yy/Nn): ");
+        (void)fgets(buf, sizeof(buf), stdin);
+
+        p = strstr(buf, "\n");
+        if (p != NULL) {
+            *p = '\0';
+        }
+
+        // don't change formation
+        if (strlen(buf) <= 1) {
+            break;
+        }
+
+        if (strchr(buf, 'N') || strchr(buf, 'n')) {
+            break;
+        }
+
+        if (strchr(buf, 'Y') || strchr(buf, 'y')) {
+            player->is_charging = 1;
+            break;
+        }
+
+        (void)printf("Unknown choice '%s'\n", buf);
     }
 }

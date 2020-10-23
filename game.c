@@ -142,19 +142,33 @@ void turn_play_one(void)
         // 1. Change Formation
         player_choose_formation(current);
 
-        // 2. Move
+        // 2. Do Charge
+        current->vtable->do_charge(current);
+
+        // 3. Move
         current->vtable->move(current, player_list, ARRAY_SIZE(player_list));
 
-        // 3. Attack
+        // 4. Attack
         opponent = current->vtable->select_opponent(current, player_list, ARRAY_SIZE(player_list));
         if (opponent == NULL) {
-            continue;
+            goto end_of_turn;
+        }
+
+        if (player_gets_ao(opponent, current)) {
+            announce("%s got an attack of opportunity on %s!\n", opponent->name, current->name);
+            if (turn_attack(opponent, current)) {
+                announce("%s defeated %s!\n", opponent->name, current->name);
+            }
         }
 
         // perform attack
         if (turn_attack(current, opponent)) {
             announce("%s defeated %s!\n", current->name, opponent->name);
         }
+
+end_of_turn:
+        // end of turn means you are no longer charging
+        current->is_charging = 0;
     }
 }
 
@@ -204,6 +218,9 @@ int main(void)
 
     player_position_rand(&bob, player_list, ARRAY_SIZE(player_list), BOARD_SIZE);
     player_position_rand(&alice, player_list, ARRAY_SIZE(player_list), BOARD_SIZE);
+
+    insert_player(&bob);
+    insert_player(&alice);
 
     turn_play_game();
     return 0;

@@ -24,6 +24,7 @@ static int infantry_get_defense(struct Player *self, struct Player *other);
 static void infantry_move(struct Player *self, struct Player list[], int len);
 static void infantry_take_damage(struct Player *self, int damage);
 static struct Player *infantry_select_opponent(struct Player *self, struct Player list[], int len);
+static void infantry_do_charge(struct Player *self);
 
 /**
  * Static Variables
@@ -35,6 +36,7 @@ static struct PlayerVTable infantry_vtable = (struct PlayerVTable){
     .move = infantry_move,
     .take_damage = infantry_take_damage,
     .select_opponent = infantry_select_opponent,
+    .do_charge = infantry_do_charge,
 };
 
 static struct Archetype arch_list[] = {
@@ -42,7 +44,7 @@ static struct Archetype arch_list[] = {
         .archetype = "Infantry",
         .definition = (struct Player){
             .hp = 10,
-            .ac = 20,
+            .ac = 10,
             .damage = 10,
             .speed = 60,
             .dex = 1,
@@ -103,6 +105,7 @@ void player_choose_formation(struct Player *self)
     input_table.choose_formation(self);
 }
 
+
 void player_roll_initiative(struct Player *self)
 {
     assert(self);
@@ -125,21 +128,80 @@ int player_cmp(const void *player0, const void *player1)
 }
 
 /**
+ * Return 1 if an attack of opportunity is available, otherwise 0
+ */
+int player_gets_ao(struct Player *self, struct Player *other)
+{
+    int rv = 0;
+
+    assert(self);
+    assert(other);
+
+    if (weapon_in_range(self, other)
+        && other->is_charging
+        && ((strcmp(self->weapon.name, "Pike") == 0)
+        || (strcmp(self->weapon.name, "Spear") == 0)
+        || (strcmp(self->weapon.name, "Bill") == 0)
+        || (strcmp(self->weapon.name, "Lance") == 0))
+       )
+    {
+        rv = 1;
+    }
+
+    return rv;
+}
+
+int player_get_speed(struct Player *self)
+{
+    int rv = 0;
+
+    assert(self);
+
+    rv = self->speed;
+
+    if ((strcmp(self->archetype, "Cavalry") == 0) && self->is_charging) {
+        rv += 60;
+    }
+
+    return rv;
+
+}
+
+/**
  * Static Function Definitions
  */
 
 static int infantry_get_attack(struct Player *self, struct Player *other)
 {
+    int bonus = 0;
+
     assert(self);
     assert(other);
     assert(self->formation.attack_bonus);
     assert(self->weapon.attack_bonus);
 
+    // TODO: Split these checks into their class method
+    if ((strcmp(self->archetype, "Cavalry") == 0) && self->is_charging) {
+        bonus = 5;
+    }
+    else if ((strcmp(self->archetype, "Infantry") == 0)
+          && (strcmp(other->archetype, "Cavalry") == 0)
+          && (strcmp(self->weapon.name, "Pike") == 0))
+    {
+        bonus = 5;
+    }
+    else if ((strcmp(self->archetype, "Shock") == 0)
+          && (strcmp(other->archetype, "Infantry") == 0))
+    {
+        bonus = 5;
+    }
+
     return RAND_RANGE(1, 20)
         + self->damage
         + self->training
         + self->formation.attack_bonus(self, other)
-        + self->weapon.attack_bonus(self, other);
+        + self->weapon.attack_bonus(self, other)
+        + bonus;
 }
 
 static int infantry_get_defense(struct Player *self, struct Player *other)
@@ -151,14 +213,15 @@ static int infantry_get_defense(struct Player *self, struct Player *other)
     assert(other);
     assert(self->formation.defend_bonus);
 
-    ac = self->ac;
+    ac = self->ac
+        + self->training
+        + self->formation.defend_bonus(self, other);
 
     for (i = 0; i < ARRAY_SIZE(self->armor); i++) {
         if (self->armor[i].name != NULL) {
             ac += self->armor[i].ac;
         }
     }
-    ac += self->formation.defend_bonus(self, other);
 
     return ac;
 }
@@ -191,6 +254,13 @@ static struct Player *infantry_select_opponent(struct Player *self, struct Playe
     assert(len > 0);
 
     return input_table.choose_opponent(self, list, len);
+}
+
+static void infantry_do_charge(struct Player *self)
+{
+    assert(self);
+
+    input_table.do_charge(self);
 }
 
 /**

@@ -282,6 +282,9 @@ int lance_attack_bonus(struct Player *attacker, struct Player *defender)
     if (attacker->is_charging) {
         rv += 10;
     }
+    else {
+        rv += 4;
+    }
 
     return rv;
 }
