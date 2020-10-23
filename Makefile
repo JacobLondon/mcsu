@@ -1,5 +1,6 @@
 CC=tcc
 CFLAGS=\
+	-ggdb \
 	-pipe \
 	-Wall \
 	-Wextra

@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "player.h"
 #include "util.h"
@@ -54,7 +55,7 @@ static struct Weapon weapon_list[] = {
         .attack_bonus = axe_attack_bonus,
     },
     {
-        .name = "War Hammer",
+        .name = "War_Hammer",
         .type = WEAPON_TYPE_MELEE,
         .range_close = 5,
         .range_max = 5,
@@ -102,6 +103,9 @@ void weapon_get(const char *name, struct Weapon *out)
             *out = weapon_list[i];
         }
     }
+
+    (void)fprintf(stderr, "Error: Weapon '%s' does not exist\n", name);
+    assert(0);
 }
 
 int weapon_is_available(const char *name)

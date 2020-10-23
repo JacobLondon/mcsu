@@ -58,5 +58,6 @@ int player_gets_ao(struct Player *self, struct Player *other);
 
 int player_get_speed(struct Player *self);
 
+void player_equip_weapon(struct Player *self, const char *weapon_name);
 
 #endif // MCSU_PLAYER_H

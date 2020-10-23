@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include "util.h"
 
 float fast_sqrtf(float number)

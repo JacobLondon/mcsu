@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <time.h>
 
@@ -21,7 +22,9 @@ static struct Player player_list[PLAYERS_MAX];
 
 void announce(const char *format, ...);
 
-int insert_player(struct Player *player);
+int game_player_insert(struct Player *player);
+struct Player *game_player_get(const char *name);
+void game_parse_player_config(const char *filename);
 
 int turn_attack(struct Player *attacker, struct Player *defender);
 void turn_play_initiative(void);
@@ -47,7 +50,7 @@ void announce(const char *format, ...)
 /**
  * 1 if player was inserted into player_list, otherwise 0 because no room
  */
-int insert_player(struct Player *player)
+int game_player_insert(struct Player *player)
 {
     int i;
 
@@ -61,6 +64,160 @@ int insert_player(struct Player *player)
     }
 
     return 0;
+}
+
+/**
+ * Get a player by name, or NULL if not present
+ */
+struct Player *game_player_get(const char *name)
+{
+    int i;
+
+    assert(name);
+
+    for (i = 0; i < ARRAY_SIZE(player_list); i++) {
+        if (player_list[i].name && (strcmp(name, player_list[i].name) == 0)) {
+            return &player_list[i];
+        }
+    }
+
+    return NULL;
+}
+
+void game_parse_player_config(const char *filename)
+{
+    int i;
+    struct Player *player;
+    FILE *fp;
+    char buf[256];
+    char name[256];
+    char type[256];
+    char value[256];
+
+    assert(filename);
+
+    fp = fopen(filename, "r");
+    if (fp == NULL) {
+        announce("Could not open player config: '%s'\n", filename);
+        return;
+    }
+
+    /** Read each line, do an operation for creating a player
+     * 
+     * Syntax:
+     * player_name [item_type] [item_value]
+     * 
+     * types:
+     *      archetype
+     *          Infantry
+     *          Cavalry
+     *          Shock
+     *      armor
+     *          Shield
+     *          Gambason
+     *          Chain_Mail
+     *          Full_Helmet
+     *          Kettle_Helm
+     *          Mail_Coif
+     *      weapon
+     *          Pike
+     *          Spear
+     *          Bill
+     *          Sword
+     *          Axe
+     *          War_Hammer
+     *          Bow
+     *          Crossbow
+     *          Javelin
+     *          Lance
+     *      dex
+     *          <int> // bonus modifier
+     *      training
+     *          <int> // bonus training
+     *      pos
+     *          North
+     *          East
+     *          South
+     *          West
+     *          Random (default)
+     * 
+     * MUST be first instance of a player (also minimum acceptable player):
+     * name archetype Infantry
+     * 
+     * Larger Example:
+     * Bob archetype Infantry
+     * Bob armor Shield
+     * Bob armor Chain_Mail
+     * Bob pos South
+     */
+    while (fgets(buf, sizeof(buf), fp)) {
+        if (sscanf(buf, "%s %s %s", name, type, value) != 3) {
+            (void)fprintf(stderr, "Error: Could not parse: %s", buf);
+            break;
+        }
+
+        // get player location in the list
+        player = game_player_get(name);
+        if (player == NULL) {
+            // we ran out of room to insert players!
+            (void)fprintf(stderr, "Error: Could not insert player %s. Max player count already reached\n", name);
+            break;
+        }
+
+        // haven't created the player yet
+        if (player->name == NULL) {
+            if (strcmp(type, "archetype") != 0) {
+                (void)fprintf(stderr, "Error: Expected 'archetype' found '%s'\n", type);
+            }
+            if (!player_new(value, name, player)) {
+                (void)fprintf(stderr, "Error: Unknown archetype '%s'\n", value);
+                break;
+            }
+        }
+
+        if (strcmp(type, "armor") == 0) {
+            player_add_armor(player, value);
+        }
+        else if (strcmp(type, "weapon") == 0) {
+            player_equip_weapon(player, value);
+        }
+        else if (strcmp(type, "dex") == 0) {
+            if (sscanf(value, "%d", &player->dex) != 1) {
+                (void)fprintf(stderr, "Error: Dex modifier '%s' could not be parsed to a number\n", value);
+                break;
+            }
+        }
+        else if (strcmp(type, "training") == 0) {
+            if (sscanf(value, "%d", &player->training) != 1) {
+                (void)fprintf(stderr, "Error: Training modifier '%s' could not be parsed to a number\n", value);
+                break;
+            }
+        }
+        else if (strcmp(type, "pos") == 0) {
+            player_position_rand(player, player_list, ARRAY_SIZE(player_list), BOARD_SIZE);
+        }
+        else if (strcmp(type, "archetype") == 0) {
+            (void)fprintf(stderr, "Error: 'archetype' respecified for player '%s'\n", name);
+            break;
+        }
+        else {
+            (void)fprintf(stderr, "Error: Unknown type '%s'\n", type);
+            break;
+        }
+    }
+
+    // load defaults if they were left empty by user
+    for (i = 0; i < ARRAY_SIZE(player_list); i++) {
+        if ((player_list[i].x == -1) || (player_list[i].y == -1)) {
+            player_position_rand(&player_list[i], player_list, ARRAY_SIZE(player_list), BOARD_SIZE);
+        }
+
+        if (player_list[i].weapon.name == NULL) {
+            player_equip_weapon(&player_list[i], "Sword");
+        }
+    }
+
+    (void)fclose(fp);
 }
 
 /**
@@ -208,19 +365,21 @@ int main(void)
 
     srand(time(NULL));
 
-    player_new("Infantry", "Bob", &bob);
+    /*player_new("Infantry", "Bob", &bob);
     player_new("Infantry", "Alice", &alice);
 
     player_add_armor(&bob, "Shield");
-    player_add_armor(&bob, "Chain Mail");
+    player_add_armor(&bob, "Chain_Mail");
 
-    player_add_armor(&alice, "Chain Mail");
+    player_add_armor(&alice, "Chain_Mail");
 
     player_position_rand(&bob, player_list, ARRAY_SIZE(player_list), BOARD_SIZE);
     player_position_rand(&alice, player_list, ARRAY_SIZE(player_list), BOARD_SIZE);
 
-    insert_player(&bob);
-    insert_player(&alice);
+    game_player_insert(&bob);
+    game_player_insert(&alice);*/
+
+    game_parse_player_config("players.conf");
 
     turn_play_game();
     return 0;

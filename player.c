@@ -1,9 +1,11 @@
 #include <assert.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "input.h"
 #include "player.h"
 #include "util.h"
+#include "share.h"
 
 /**
  * Data Types
@@ -50,6 +52,8 @@ static struct Archetype arch_list[] = {
             .dex = 1,
             .training = 5,
             .vtable = &infantry_vtable,
+            .x = -1,
+            .y = -1,
         },
     },
     // TODO
@@ -163,7 +167,7 @@ int player_get_speed(struct Player *self)
         rv += 60;
     }
 
-    return rv;
+    return rv / TILE_SIZE_FEET;
 
 }
 
@@ -338,5 +342,16 @@ void player_add_armor(struct Player *self, const char *armor_name)
             return;
         }
     }
+
+    (void)fprintf(stderr, "Error: Player has %zu / %zu armor equipped and may not equip more\n",
+            ARRAY_SIZE(self->armor), ARRAY_SIZE(self->armor));
     assert(0);
+}
+
+void player_equip_weapon(struct Player *self, const char *weapon_name)
+{
+    assert(self);
+    assert(weapon_name);
+
+    weapon_get(weapon_name, &self->weapon);
 }

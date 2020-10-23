@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "armor.h"
 #include "util.h"
@@ -16,22 +17,22 @@ static struct Armor armor_list[] = {
         .type = ARMOR_TYPE_LIGHT,
     },
     {
-        .name = "Chain Mail",
+        .name = "Chain_Mail",
         .ac = 5,
         .type = ARMOR_TYPE_HEAVY,
     },
     {
-        .name = "Full Helmet",
+        .name = "Full_Helmet",
         .ac = 3,
         .type = ARMOR_TYPE_OTHER,
     },
     {
-        .name = "Kettle Helm",
+        .name = "Kettle_Helm",
         .ac = 2,
         .type = ARMOR_TYPE_OTHER,
     },
     {
-        .name = "Mail Coif",
+        .name = "Mail_Coif",
         .ac = 1,
         .type = ARMOR_TYPE_OTHER,
     },
@@ -54,5 +55,6 @@ void armor_get(const char *name, struct Armor *out)
         }
     }
 
+    (void)fprintf(stderr, "Error: Armor '%s' does not exist\n", name);
     assert(0);
 }
