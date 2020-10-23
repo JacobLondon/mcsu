@@ -7,16 +7,7 @@
 #include "input.h"
 #include "player.h"
 #include "util.h"
-
-/**
- * Macros
- */
-
-#define PLAYERS_MAX 2
-
-/**
- * Type Definitions
- */
+#include "share.h"
 
 /**
  * Static Variables
@@ -30,9 +21,10 @@ static struct Player player_list[PLAYERS_MAX];
 
 void announce(const char *format, ...);
 
-
+int insert_player(struct Player *player);
 
 int turn_attack(struct Player *attacker, struct Player *defender);
+void turn_play_initiative(void);
 void turn_play_one(void);
 int turn_game_is_over(void);
 void turn_play_game(void);
@@ -50,6 +42,25 @@ void announce(const char *format, ...)
     va_start(ap, format);
     (void)vfprintf(stdout, format, ap);
     va_end(ap);
+}
+
+/**
+ * 1 if player was inserted into player_list, otherwise 0 because no room
+ */
+int insert_player(struct Player *player)
+{
+    int i;
+
+    assert(player);
+
+    for (i = 0; i < ARRAY_SIZE(player_list); i++) {
+        if (player_list[i].name == NULL) {
+            player_list[i] = *player;
+            return 1;
+        }
+    }
+
+    return 0;
 }
 
 /**
@@ -87,6 +98,21 @@ int turn_attack(struct Player *attacker, struct Player *defender)
 
 skip:
     return (defender->hp <= 0);
+}
+
+void turn_play_initiative(void)
+{
+    int i;
+
+    for (i = 0; i < ARRAY_SIZE(player_list); i++) {
+        if (player_list[i].name != NULL) {
+            player_roll_initiative(&player_list[i]);
+            announce("%s rolled %d for initiative!\n", player_list[i].name, player_list[i].initiative);
+        }
+    }
+
+    // put players in initiative order
+    qsort(player_list, ARRAY_SIZE(player_list), sizeof(player_list[0]), player_cmp);
 }
 
 void turn_play_one(void)
@@ -148,6 +174,7 @@ int turn_game_is_over(void)
 
 void turn_play_game(void)
 {
+    turn_play_initiative();
     while (!turn_game_is_over()) {
         turn_play_one();
     }
@@ -162,21 +189,21 @@ void turn_play_game(void)
 
 int main(void)
 {
-    struct Player *bob = &player_list[0];
-    struct Player *alice = &player_list[1];
+    struct Player bob;
+    struct Player alice;
 
     srand(time(NULL));
 
-    player_make_archetype("Infantry", "Bob", bob);
-    player_make_archetype("Infantry", "Alice", alice);
+    player_new("Infantry", "Bob", &bob);
+    player_new("Infantry", "Alice", &alice);
 
-    player_add_armor(bob, "Shield");
-    player_add_armor(bob, "Chain Mail");
+    player_add_armor(&bob, "Shield");
+    player_add_armor(&bob, "Chain Mail");
 
-    player_add_armor(alice, "Chain Mail");
+    player_add_armor(&alice, "Chain Mail");
 
-    player_position_rand(bob, player_list, ARRAY_SIZE(player_list), 10);
-    player_position_rand(alice, player_list, ARRAY_SIZE(player_list), 10);
+    player_position_rand(&bob, player_list, ARRAY_SIZE(player_list), BOARD_SIZE);
+    player_position_rand(&alice, player_list, ARRAY_SIZE(player_list), BOARD_SIZE);
 
     turn_play_game();
     return 0;

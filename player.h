@@ -20,6 +20,7 @@ struct Player {
     int ac;
     int damage;
     int speed;
+    int dex;
     int is_charging;
     int is_mounted;
     int training;
@@ -31,12 +32,13 @@ struct Player {
     struct Armor armor[ARMOR_EQUIPS_MAX];
     struct Formation formation;
     struct Weapon weapon;
+    int initiative;
 };
 
 /**
  * Return 1 on success, otherwise failure
  */
-int player_make_archetype(const char *archetype, const char *name, struct Player *out);
+int player_new(const char *archetype, const char *name, struct Player *out);
 
 void player_position_rand(struct Player *self, struct Player list[], int len, int boardsize);
 
@@ -47,5 +49,9 @@ int player_has_armor(struct Player *self, const char *armor_name);
 int player_has_armor_of_type(struct Player *self, enum ArmorType type);
 
 void player_choose_formation(struct Player *self);
+
+void player_roll_initiative(struct Player *self);
+
+int player_cmp(const void *player0, const void *player1);
 
 #endif // MCSU_PLAYER_H

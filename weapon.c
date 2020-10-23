@@ -4,6 +4,7 @@
 #include "player.h"
 #include "util.h"
 #include "weapon.h"
+#include "share.h"
 
 int pike_attack_bonus(struct Player *attacker, struct Player *defender);
 int spear_attack_bonus(struct Player *attacker, struct Player *defender);
@@ -125,7 +126,7 @@ int weapon_in_range(struct Player *attacker, struct Player *defender)
     assert(attacker);
     assert(defender);
 
-    return (distance(attacker->x, attacker->y, defender->x, defender->y) <= attacker->weapon.range_max);
+    return (distance(attacker->x, attacker->y, defender->x, defender->y) <= (attacker->weapon.range_max / TILE_SIZE_FEET));
 }
 
 int pike_attack_bonus(struct Player *attacker, struct Player *defender)

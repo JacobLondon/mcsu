@@ -45,6 +45,7 @@ static struct Archetype arch_list[] = {
             .ac = 20,
             .damage = 10,
             .speed = 60,
+            .dex = 1,
             .training = 5,
             .vtable = &infantry_vtable,
         },
@@ -102,6 +103,26 @@ void player_choose_formation(struct Player *self)
     input_table.choose_formation(self);
 }
 
+void player_roll_initiative(struct Player *self)
+{
+    assert(self);
+
+    self->initiative = RAND_RANGE(1, 20) + self->dex;
+}
+
+/**
+ * Qsort function for 'struct Player[]'
+ */
+int player_cmp(const void *player0, const void *player1)
+{
+    struct Player *p0 = (struct Player *)player0;
+    struct Player *p1 = (struct Player *)player1;
+
+    assert(player0);
+    assert(player1);
+
+    return (p1->initiative - p0->initiative);
+}
 
 /**
  * Static Function Definitions
@@ -176,7 +197,7 @@ static struct Player *infantry_select_opponent(struct Player *self, struct Playe
  * Public Function Definitions
  */
 
-int player_make_archetype(const char *archetype, const char *name, struct Player *out)
+int player_new(const char *archetype, const char *name, struct Player *out)
 {
     int i;
     int rv = 0;
