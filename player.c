@@ -285,8 +285,10 @@ int player_new(const char *archetype, const char *name, struct Player *out)
     for (i = 0; i < ARRAY_SIZE(arch_list); i++) {
         if (strcmp(archetype, arch_list[i].archetype) == 0) {
             (void)memcpy(out, &arch_list[i].definition, sizeof(struct Player));
-            out->archetype = archetype;
-            out->name = name;
+            out->archetype = strdup(archetype);
+            assert(out->archetype);
+            out->name = strdup(name);
+            assert(out->name);
             // default formation
             formation_get("Line", &out->formation);
             weapon_get("Sword", &out->weapon);
@@ -296,6 +298,18 @@ int player_new(const char *archetype, const char *name, struct Player *out)
     }
 
     return rv;
+}
+
+void player_del(struct Player *self)
+{
+    assert(self);
+    if (self->archetype) {
+        free(self->archetype);
+    }
+    if (self->name) {
+        free(self->name);
+    }
+    free(self);
 }
 
 void player_position_rand(struct Player *self, struct Player list[], int len, int boardsize)

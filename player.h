@@ -27,8 +27,8 @@ struct Player {
     int x;
     int y;
     struct PlayerVTable *vtable;
-    const char *name;
-    const char *archetype;
+    char *name;
+    char *archetype;
     struct Armor armor[ARMOR_EQUIPS_MAX];
     struct Formation formation;
     struct Weapon weapon;
@@ -39,6 +39,7 @@ struct Player {
  * Return 1 on success, otherwise failure
  */
 int player_new(const char *archetype, const char *name, struct Player *out);
+void player_del(struct Player *self);
 
 void player_position_rand(struct Player *self, struct Player list[], int len, int boardsize);
 

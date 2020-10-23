@@ -84,6 +84,21 @@ struct Player *game_player_get(const char *name)
     return NULL;
 }
 
+struct Player *game_player_next_available(const char *name)
+{
+    int i;
+
+    assert(name);
+
+    for (i = 0; i < ARRAY_SIZE(player_list); i++) {
+        if (player_list[i].name == NULL) {
+            return &player_list[i];
+        }
+    }
+
+    return NULL;
+}
+
 void game_parse_player_config(const char *filename)
 {
     int i;
@@ -151,23 +166,26 @@ void game_parse_player_config(const char *filename)
      * Bob pos South
      */
     while (fgets(buf, sizeof(buf), fp)) {
+        if (strlen(buf) < 5) {
+            continue;
+        }
+
         if (sscanf(buf, "%s %s %s", name, type, value) != 3) {
-            (void)fprintf(stderr, "Error: Could not parse: %s", buf);
+            (void)fprintf(stderr, "Error: Could not parse: '%s'", buf);
             break;
         }
 
         // get player location in the list
         player = game_player_get(name);
         if (player == NULL) {
-            // we ran out of room to insert players!
-            (void)fprintf(stderr, "Error: Could not insert player %s. Max player count already reached\n", name);
-            break;
-        }
-
-        // haven't created the player yet
-        if (player->name == NULL) {
+            player = game_player_next_available(name);
+            if (player == NULL) {
+                (void)fprintf(stderr, "Error: No more player slots available for '%s'\n", name);
+                break;
+            }
             if (strcmp(type, "archetype") != 0) {
                 (void)fprintf(stderr, "Error: Expected 'archetype' found '%s'\n", type);
+                break;
             }
             if (!player_new(value, name, player)) {
                 (void)fprintf(stderr, "Error: Unknown archetype '%s'\n", value);
@@ -175,7 +193,7 @@ void game_parse_player_config(const char *filename)
             }
         }
 
-        if (strcmp(type, "armor") == 0) {
+        else if (strcmp(type, "armor") == 0) {
             player_add_armor(player, value);
         }
         else if (strcmp(type, "weapon") == 0) {

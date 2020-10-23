@@ -101,6 +101,7 @@ void weapon_get(const char *name, struct Weapon *out)
     for (i = 0; i < ARRAY_SIZE(weapon_list); i++) {
         if (strcmp(name, weapon_list[i].name) == 0) {
             *out = weapon_list[i];
+            return;
         }
     }
 
@@ -130,7 +131,7 @@ int weapon_in_range(struct Player *attacker, struct Player *defender)
     assert(attacker);
     assert(defender);
 
-    return (distance(attacker->x, attacker->y, defender->x, defender->y) <= (attacker->weapon.range_max / TILE_SIZE_FEET));
+    return ((int)distance(attacker->x, attacker->y, defender->x, defender->y) <= (attacker->weapon.range_max / TILE_SIZE_FEET));
 }
 
 int pike_attack_bonus(struct Player *attacker, struct Player *defender)
