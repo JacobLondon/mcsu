@@ -28,6 +28,7 @@ void game_parse_player_config(const char *filename);
 
 int turn_attack(struct Player *attacker, struct Player *defender);
 void turn_play_initiative(void);
+struct Player *turn_yield_current_player(void);
 void turn_play_one(void);
 int turn_game_is_over(void);
 void turn_play_game(void);
@@ -226,6 +227,10 @@ void game_parse_player_config(const char *filename)
 
     // load defaults if they were left empty by user
     for (i = 0; i < ARRAY_SIZE(player_list); i++) {
+        if (player_list[i].name == NULL) {
+            continue;
+        }
+
         if ((player_list[i].x == -1) || (player_list[i].y == -1)) {
             player_position_rand(&player_list[i], player_list, ARRAY_SIZE(player_list), BOARD_SIZE);
         }
@@ -277,22 +282,33 @@ skip:
 
 void turn_play_initiative(void)
 {
-    int i;
+    struct Player *current;
 
-    for (i = 0; i < ARRAY_SIZE(player_list); i++) {
-        if (player_list[i].name != NULL) {
-            player_roll_initiative(&player_list[i]);
-            announce("%s rolled %d for initiative!\n", player_list[i].name, player_list[i].initiative);
-        }
+    while ((current = turn_yield_current_player()) != NULL) {
+        player_roll_initiative(current);
+        announce("%s rolled %d for initiative!\n", current->name, current->initiative);
     }
 
     // put players in initiative order
     qsort(player_list, ARRAY_SIZE(player_list), sizeof(player_list[0]), player_cmp);
 }
 
+struct Player *turn_yield_current_player(void)
+{
+    static int i = 0;
+
+    for (; i < ARRAY_SIZE(player_list); i++) {
+        if (player_list[i].hp > 0 && player_list[i].name != NULL) {
+            return &player_list[i++];
+        }
+    }
+
+    i = 0;
+    return NULL;
+}
+
 void turn_play_one(void)
 {
-    int i;
     struct Player *current;
     struct Player *opponent;
 
@@ -303,16 +319,14 @@ void turn_play_one(void)
      * 3. Attack?
      */
 
-    for (i = 0; i < ARRAY_SIZE(player_list); i++) {
-        current = &player_list[i];
-
+    while ((current = turn_yield_current_player()) != NULL) {
         // you don't get a turn if you're dead
         if (current->hp <= 0) {
             continue;
         }
 
         input_table.display_players(player_list, ARRAY_SIZE(player_list));
-        announce(" === %s's Turn ===\n", player_list[i].name);
+        announce(" === %s's Turn ===\n", current->name);
 
         // 1. Change Formation
         player_choose_formation(current);
@@ -378,24 +392,7 @@ void turn_play_game(void)
 
 int main(void)
 {
-    struct Player bob;
-    struct Player alice;
-
     srand(time(NULL));
-
-    /*player_new("Infantry", "Bob", &bob);
-    player_new("Infantry", "Alice", &alice);
-
-    player_add_armor(&bob, "Shield");
-    player_add_armor(&bob, "Chain_Mail");
-
-    player_add_armor(&alice, "Chain_Mail");
-
-    player_position_rand(&bob, player_list, ARRAY_SIZE(player_list), BOARD_SIZE);
-    player_position_rand(&alice, player_list, ARRAY_SIZE(player_list), BOARD_SIZE);
-
-    game_player_insert(&bob);
-    game_player_insert(&alice);*/
 
     game_parse_player_config("players.conf");
 

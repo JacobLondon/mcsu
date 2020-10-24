@@ -112,6 +112,10 @@ static struct Player *cli_choose_opponent(struct Player *player, struct Player l
 
         // now make sure the spot is available
         for (i = 0; i < len; i++) {
+            // can't attack yourself
+            if (player == &list[i]) {
+                continue;
+            }
             // need to try again
             if ((x == list[i].x) && (y == list[i].y)) {
                 opponent = &list[i];
