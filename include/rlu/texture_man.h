@@ -7,7 +7,7 @@ void texture_man_init(void);
 void texture_man_cleanup(void);
 
 /**
- * Load a texture and return a pointer to it,
+ * Load a texture and return a shared pointer to it,
  * ignore the loading if the texture already exists
  */
 Texture2D *texture_man_load(char *png);

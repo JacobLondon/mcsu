@@ -141,6 +141,8 @@
   <ItemGroup>
     <ClInclude Include="include\mcsu\macros.h" />
     <ClInclude Include="include\mcsu\mcsu.h" />
+    <ClInclude Include="include\mcsu\player.h" />
+    <ClInclude Include="include\mcsu\player_man.h" />
     <ClInclude Include="include\mcsu\util.h" />
     <ClInclude Include="include\raylib.h" />
     <ClInclude Include="include\rlu\anim.h" />
@@ -156,7 +158,11 @@
     <ClInclude Include="include\rlu\util.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\armor.c" />
+    <ClCompile Include="src\formation.c" />
     <ClCompile Include="src\main.c" />
+    <ClCompile Include="src\player.c" />
+    <ClCompile Include="src\player_man.c" />
     <ClCompile Include="src\rlu\anim.c" />
     <ClCompile Include="src\rlu\anim_man.c" />
     <ClCompile Include="src\rlu\key_man.c" />
@@ -167,6 +173,7 @@
     <ClCompile Include="src\rlu\scene_object.c" />
     <ClCompile Include="src\rlu\texture_man.c" />
     <ClCompile Include="src\rlu\util.c" />
+    <ClCompile Include="src\weapon.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

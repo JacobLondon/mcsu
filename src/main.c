@@ -38,18 +38,20 @@ static void context_init(void)
 		{0}
 	};
 
+	// graphics initialization
 	InitWindow(1600, 900, "Mass Combat");
 	icon = LoadImage(ASSET_DIRECTORY "/icon_sword.png");
 	SetWindowIcon(icon);
 	SetTargetFPS(60);
 
-	pool_init(100);
+	// library initialization
 	texture_man_init();
 	scene_man_init(definitions, sets);
+	player_man_init(1600, 900, 16, 9);
 
-
+	// library loading
+	player_man_me_load("player.conf");
 	scene_man_load_set("Autumn Field");
-	pool_usage();
 }
 
 static void context_init_cb_autumn(scene *self)
@@ -62,17 +64,36 @@ static void context_init_cb_autumn(scene *self)
 
 static void context_update(void)
 {
+	// TODO: Temp
+	{
+		static int x;
+		static int y;
+		if (IsMouseButtonPressed(0)) {
+			x = GetMouseX();
+			y = GetMouseY();
+		}
+		if (IsMouseButtonReleased(0)) {
+			// convert to world coordinates
+			x = x / 1600.0 * 16;
+			y = y / 900.0 * 9;
+			player_man_me_move(x, y);
+		}
+	}
+
 	scene_man_update();
+	player_man_update();
 }
 
 static void context_draw(void)
 {
 	scene_man_draw();
+	player_man_draw();
 	DrawFPS(0, 0);
 }
 
 static void context_cleanup(void)
 {
+	player_man_cleanup();
 	scene_man_cleanup();
 	UnloadImage(icon);
 	CloseWindow();

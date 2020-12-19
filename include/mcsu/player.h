@@ -75,7 +75,6 @@ typedef struct PlayerFlatStruct {
 
 	char name[PLAYER_NAME_MAX];
 	uint8_t armor_enum[PLAYER_ARMOR_EQUIPS];
-	uint8_t armor_type_enum[PLAYER_ARMOR_EQUIPS];
 	uint8_t formation_enum;
 	uint8_t weapon_enum;
 	uint8_t weapon_type_enum;
@@ -111,5 +110,9 @@ void player_set_formation(PlayerStruct *player, FormationEnum formation);
 void player_set_weapon(PlayerStruct *player, WeaponEnum weapon);
 
 int player_cmp(const void *player0, const void *player1);
+
+PlayerArchetypeEnum player_get_archetype_by_name(char *archetype);
+ArmorEnum player_get_armor_by_name(char *armor);
+WeaponEnum player_get_weapon_by_name(char *weapon);
 
 #endif // MCSU_PLAYER_H_

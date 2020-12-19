@@ -1,4 +1,4 @@
-#include "player.h"
+#include <mcsu/mcsu.h>
 
 struct formation {
     int (* attack_bonus)(PlayerStruct *player, PlayerStruct *defender);
