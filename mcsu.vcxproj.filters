@@ -51,9 +51,6 @@
     <ClInclude Include="include\rlu\util.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\mcsu\macros.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\mcsu\mcsu.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -67,6 +64,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\rlu\ui.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mcsu\share.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mcsu\uictrl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -120,6 +123,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\rlu\ui.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\uictrl.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

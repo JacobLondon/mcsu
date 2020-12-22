@@ -139,10 +139,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="include\mcsu\macros.h" />
     <ClInclude Include="include\mcsu\mcsu.h" />
     <ClInclude Include="include\mcsu\player.h" />
     <ClInclude Include="include\mcsu\player_man.h" />
+    <ClInclude Include="include\mcsu\share.h" />
+    <ClInclude Include="include\mcsu\uictrl.h" />
     <ClInclude Include="include\mcsu\util.h" />
     <ClInclude Include="include\raylib.h" />
     <ClInclude Include="include\rlu\anim.h" />
@@ -175,6 +176,7 @@
     <ClCompile Include="src\rlu\texture_man.c" />
     <ClCompile Include="src\rlu\ui.c" />
     <ClCompile Include="src\rlu\util.c" />
+    <ClCompile Include="src\uictrl.c" />
     <ClCompile Include="src\weapon.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -61,10 +61,10 @@ component *label_new(char *text, size_t len)
 	comp = component_new();
 	comp->type = TYPE_LABEL;
 	comp->data.label.len = len;
-	comp->data.label.text = malloc(len + 1);
+	comp->data.label.text = malloc(len);
 	assert(comp->data.label.text);
 
-	snprintf(comp->data.label.text, len + 1, "%s", text);
+	snprintf(comp->data.label.text, len, "%s", text);
 
 	return comp;
 }

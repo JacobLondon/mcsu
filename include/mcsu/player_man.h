@@ -1,8 +1,15 @@
 #ifndef MCSU_PLAYER_MAN_H_
 #define MCSU_PLAYER_MAN_H_
 
+/**
+ * Manage the player and the other connected players.
+ * 
+ * Allow for non-UI input control. See uictrl.c for
+ * UI input controls.
+ */
+
 // init and tell how to draw the players at locations
-void player_man_init(float screenw, float screenh, int worldw, int worldh);
+void player_man_init(void);
 void player_man_cleanup(void);
 void player_man_draw(void);
 void player_man_update(void);

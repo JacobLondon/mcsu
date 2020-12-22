@@ -4,6 +4,8 @@
 #include <raylib.h>
 
 typedef struct component_tag component;
+typedef component label;
+typedef component button;
 
 typedef void (*button_func)(void *client);
 
