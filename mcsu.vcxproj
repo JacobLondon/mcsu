@@ -155,6 +155,7 @@
     <ClInclude Include="include\rlu\scene_man.h" />
     <ClInclude Include="include\rlu\scene_object.h" />
     <ClInclude Include="include\rlu\texture_man.h" />
+    <ClInclude Include="include\rlu\ui.h" />
     <ClInclude Include="include\rlu\util.h" />
   </ItemGroup>
   <ItemGroup>
@@ -172,6 +173,7 @@
     <ClCompile Include="src\rlu\scene_man.c" />
     <ClCompile Include="src\rlu\scene_object.c" />
     <ClCompile Include="src\rlu\texture_man.c" />
+    <ClCompile Include="src\rlu\ui.c" />
     <ClCompile Include="src\rlu\util.c" />
     <ClCompile Include="src\weapon.c" />
   </ItemGroup>

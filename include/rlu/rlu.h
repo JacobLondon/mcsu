@@ -19,6 +19,7 @@
 #include "music_man.h"
 #include "scene_man.h"
 #include "texture_man.h"
+#include "ui.h"
 #include "util.h"
 
 #endif // RLU_RLU_H_

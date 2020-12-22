@@ -61,6 +61,8 @@ typedef enum PlayerArchetypeEnum {
 } PlayerArchetypeEnum;
 
 typedef struct PlayerFlatStruct {
+	uint32_t uid;
+	uint32_t turn; // the uid of whose turn it is
 	int8_t hp;
 	uint8_t ac;
 	uint8_t x;

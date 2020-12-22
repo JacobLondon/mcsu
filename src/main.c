@@ -65,7 +65,7 @@ static void context_init_cb_autumn(scene *self)
 static void context_update(void)
 {
 	// TODO: Temp
-	{
+	/*{
 		static int x;
 		static int y;
 		if (IsMouseButtonPressed(0)) {
@@ -78,7 +78,7 @@ static void context_update(void)
 			y = y / 900.0 * 9;
 			player_man_me_move(x, y);
 		}
-	}
+	}*/
 
 	scene_man_update();
 	player_man_update();
