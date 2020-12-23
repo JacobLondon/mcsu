@@ -43,8 +43,7 @@ extern void (*dealloc)(void *p);
 int rand_range(int min, int max);
 float rand_uniform(void);
 
-/* 0 -> false, 1-> true */
-int streq(char *s1, char *s2);
+#define streq(s1, s2) (strcmp((s1), (s2)) == 0)
 
 char *file_read(const char *fname, size_t *size);
 int file_write(const char *fname, const char *str);

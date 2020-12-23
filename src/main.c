@@ -65,7 +65,7 @@ static void context_init_cb_autumn(scene *self)
 {
 	so *s = SCENE_MAN_LOAD_SO(ASSET_DIRECTORY "/field_0.png", 1, 1);
 	so_set_pos(s, 0, 0);
-	so_set_scale(s, gbl_screen_width / 1920.0);
+	so_set_scale(s, gbl_screen_width / 1920.0); // fit the screen :)
 	scene_load_object(self, s);
 }
 
